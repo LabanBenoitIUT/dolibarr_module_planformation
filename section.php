@@ -219,6 +219,7 @@ function _card(TPDOdb &$PDOdb, TSection &$pfs, $mode = '') {
 		}
 	}
         $planId = GETPOST('plan_id');
+        $btSave = $formCore->btsubmit($langs->trans('Valid'), 'save');
         if(!empty($planId)) {
             $btCancel = '<a class="butAction" href="' . dol_buildpath('/planformation/section.php?id=' . $pfs->rowid . '&plan_id=' . $_GET['plan_id'], 1) . '">' . $langs->trans('Cancel') . '</a>';
             $btModifier = '<a class="butAction" href="' . dol_buildpath('/planformation/section.php?id=' . $pfs->rowid . '&plan_id=' . $_GET['plan_id'] . '&action=edit', 1) . '">' . $langs->trans('PFSectionEdit') . '</a>';
@@ -227,7 +228,6 @@ function _card(TPDOdb &$PDOdb, TSection &$pfs, $mode = '') {
         else {
             $btRetour = '<a class="butAction" href="' . dol_buildpath("/planformation/section.php?action=list", 1) . '">' . $langs->trans('BackToList') . '</a>';
             $btCancel = '<a class="butAction" href="' . dol_buildpath('/planformation/section.php?id=' . $pfs->rowid, 1) . '">' . $langs->trans('Cancel') . '</a>';//$formCore->btsubmit($langs->trans('Cancel'), 'cancel');
-            $btSave = $formCore->btsubmit($langs->trans('Valid'), 'save');
             $btModifier = '<a class="butAction" href="' . dol_buildpath('/planformation/section.php?id=' . $pfs->rowid . '&action=edit', 1) . '">' . $langs->trans('PFSectionEdit') . '</a>';
         }
 	
