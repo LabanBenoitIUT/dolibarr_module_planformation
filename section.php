@@ -71,8 +71,7 @@ if (! empty($action)) {
 			$pfs->load($PDOdb, GETPOST('id', 'int'));
 				$pfs->set_values($_REQUEST);
                                 
-                                
-				$pfs->save($PDOdb, GETPOST('budget'));
+                                $pfs->save($PDOdb, GETPOST('budget'), GETPOST('fk_section_parente'));
 				_card($PDOdb, $pfs, 'view');
 
 			break;
@@ -235,8 +234,8 @@ function _card(TPDOdb &$PDOdb, TSection &$pfs, $mode = '') {
         $planId = GETPOST('plan_id');
         $btSave = $formCore->btsubmit($langs->trans('Valid'), 'save');
         if(!empty($planId)) {
-            $btCancel = '<a class="butAction" href="' . dol_buildpath('/planformation/section.php?id=' . $pfs->rowid . '&plan_id=' . $_GET['plan_id'], 1) . '">' . $langs->trans('Cancel') . '</a>';
-            $btModifier = '<a class="butAction" href="' . dol_buildpath('/planformation/section.php?id=' . $pfs->rowid . '&plan_id=' . $_GET['plan_id'] . '&action=edit', 1) . '">' . $langs->trans('PFSectionEdit') . '</a>';
+            $btCancel = '<a class="butAction" href="' . dol_buildpath('/planformation/section.php?id=' . $pfs->rowid . '&plan_id=' .  GETPOST('plan_id'), 1) . '">' . $langs->trans('Cancel') . '</a>';
+            $btModifier = '<a class="butAction" href="' . dol_buildpath('/planformation/section.php?id=' . $pfs->rowid . '&plan_id=' . GETPOST('plan_id') . '&action=edit', 1) . '">' . $langs->trans('PFSectionEdit') . '</a>';
             $btRetour = '<a class="butAction" href="' . dol_buildpath('/planformation/planformation.php?id=' . $planId, 1) . '">' . $langs->trans('BackToList') . '</a>';
 	}
         else {
@@ -265,9 +264,9 @@ function _card(TPDOdb &$PDOdb, TSection &$pfs, $mode = '') {
 		$data['title'] = $formCore->texte('', 'title', $pfs->title, 30, 255);
                 $data['budget'] = $formCore->texte('', 'budget', $planformSection->budget, 30, 255);
                 
-                $availableSection = TSection::getAvailableParentSection($PDOdb, GETPOST('plan_id', 'int'), $pfs->id);
-                var_dump($availableSection);
-                $data['fk_section_parente'] = $formCore->combo($langs->trans('Select Section To Add'), 'fk_section', $availableSection, '');
+                $availableSection = $planformSection->getAvailableParentSection($PDOdb);
+                
+                $data['fk_section_parente'] = $formCore->combo("", 'fk_section_parente', $availableSection, $planformSection->fk_section_parente);
                 
 		if ($conf->global->PF_SECTION_ADDON == 'mod_planformation_section_universal') {
 			$data['ref'] = $formCore->texte('', 'ref', $pfs->ref, 15, 255);
@@ -309,4 +308,20 @@ function _card(TPDOdb &$PDOdb, TSection &$pfs, $mode = '') {
 	));
 
 	echo $formCore->end_form();
+        
+        if ($mode == 'view') {
+
+		// Combo box to add section on an other section
+		$formCore = new TFormCore($_SERVER['PHP_SELF'], 'formaddSection', 'POST');
+		echo $formCore->hidden('action', 'addsection');
+		echo $formCore->hidden('id', $pfs->getId());
+                echo $formCore->hidden('plan_id', GETPOST('plan_id', 'int'));
+		$pfsBis = new TSection();
+		$availableSection = $pfsBis->getAvailableSection($PDOdb, $pfs->getId());
+		echo $formCore->combo($langs->trans('Select Section To Add'), 'fk_section', $availableSection, '');
+		echo $formCore->btsubmit($langs->trans('Add'), 'addsection');
+		$formCore->end();
+
+		
+	}
 }
