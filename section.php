@@ -71,7 +71,7 @@ if (! empty($action)) {
 			$pfs->load($PDOdb, GETPOST('id', 'int'));
 				$pfs->set_values($_REQUEST);
                                 
-                                $pfs->save($PDOdb, GETPOST('budget'), GETPOST('fk_section_parente'));
+                                $pfs->save($PDOdb, GETPOST('budget'), GETPOST('fk_section_parente'), GETPOST('plan_id'));
 				_card($PDOdb, $pfs, 'view');
 
 			break;
@@ -79,7 +79,11 @@ if (! empty($action)) {
 		case 'delete' :
 
 			if ($pfs->load($PDOdb, GETPOST('id', 'int'))) {
-				$pfs->delete($PDOdb);
+                            if($pfs->isDeletable($PDOdb))
+                                $pfs->delete($PDOdb);
+                            else
+                                setEventMessage($langs->trans('NotDeletable'), 'errors');
+                                
 				_list($PDOdb, $pfs);
 			} else {
 				setEventMessage($langs->trans('ImpossibleLoadElement'), 'errors');
@@ -232,7 +236,9 @@ function _card(TPDOdb &$PDOdb, TSection &$pfs, $mode = '') {
 		}
 	}
         $planId = GETPOST('plan_id');
+        
         $btSave = $formCore->btsubmit($langs->trans('Valid'), 'save');
+        
         if(!empty($planId)) {
             $btCancel = '<a class="butAction" href="' . dol_buildpath('/planformation/section.php?id=' . $pfs->rowid . '&plan_id=' .  GETPOST('plan_id'), 1) . '">' . $langs->trans('Cancel') . '</a>';
             $btModifier = '<a class="butAction" href="' . dol_buildpath('/planformation/section.php?id=' . $pfs->rowid . '&plan_id=' . GETPOST('plan_id') . '&action=edit', 1) . '">' . $langs->trans('PFSectionEdit') . '</a>';
@@ -244,10 +250,7 @@ function _card(TPDOdb &$PDOdb, TSection &$pfs, $mode = '') {
             $btModifier = '<a class="butAction" href="' . dol_buildpath('/planformation/section.php?id=' . $pfs->rowid . '&action=edit', 1) . '">' . $langs->trans('PFSectionEdit') . '</a>';
         }
 	
-	
-	
-	
-	$btDelete = "<input type=\"button\" id=\"action-delete\" value=\"" . $langs->trans('Delete') . "\" name=\"cancel\" class=\"butActionDelete\" onclick=\"if(confirm('" . $langs->trans('PFDeleteConfirm') . "'))document.location.href='?action=delete&id=" . $pfs->rowid . "'\" />";
+	$btDelete = "<input type=\"button\" id=\"action-delete\" value=\"" . $langs->trans('Delete') . "\" name=\"cancel\" class=\"butActionDelete\" onclick=\"if(confirm('" . 'Etes vous sûr de supprimer ?'./*. $langs->trans('PFDeleteConfirm') .*/ "'))document.location.href='?action=delete&id=" . $pfs->rowid . "'\" />";
 
 	// Fill form with title and data
 	$data = $pfs->getTrans('title');
@@ -264,7 +267,8 @@ function _card(TPDOdb &$PDOdb, TSection &$pfs, $mode = '') {
 		$data['title'] = $formCore->texte('', 'title', $pfs->title, 30, 255);
                 $data['budget'] = $formCore->texte('', 'budget', $planformSection->budget, 30, 255);
                 
-                $availableSection = $planformSection->getAvailableParentSection($PDOdb);
+                if(GETPOST('action') !== 'new')
+                    $availableSection = $planformSection->getAvailableParentSection($PDOdb);
                 
                 $data['fk_section_parente'] = $formCore->combo("", 'fk_section_parente', $availableSection, $planformSection->fk_section_parente);
                 
