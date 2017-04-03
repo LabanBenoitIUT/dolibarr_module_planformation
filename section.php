@@ -308,20 +308,4 @@ function _card(TPDOdb &$PDOdb, TSection &$pfs, $mode = '') {
 	));
 
 	echo $formCore->end_form();
-        
-        if ($mode == 'view') {
-
-		// Combo box to add section on an other section
-		$formCore = new TFormCore($_SERVER['PHP_SELF'], 'formaddSection', 'POST');
-		echo $formCore->hidden('action', 'addsection');
-		echo $formCore->hidden('id', $pfs->getId());
-                echo $formCore->hidden('plan_id', GETPOST('plan_id', 'int'));
-		$pfsBis = new TSection();
-		$availableSection = $pfsBis->getAvailableSection($PDOdb, $pfs->getId());
-		echo $formCore->combo($langs->trans('Select Section To Add'), 'fk_section', $availableSection, '');
-		echo $formCore->btsubmit($langs->trans('Add'), 'addsection');
-		$formCore->end();
-
-		
-	}
 }
